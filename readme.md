@@ -1,7 +1,5 @@
 # gewechaty
 
-## 由于依赖项目Gewechat镜像目前已经停止下载，本项目不再维护（已有镜像的用户可以继续使用）。
-
 ## 一、简介
 
 gewechaty 是基于[Gewechat](https://github.com/Devo919/Gewechat?tab=readme-ov-file)项目的二次封装，提供了更方便的使用方式。参考 wechaty 的 api 实现，以满足更快速开发的需求（由于gewechat接口限制无法完全平滑迁移只是提供更便捷的使用方法，如有些同步的方法需要改为异步）。
@@ -359,85 +357,85 @@ const bot = new GeweBot({
 
 ### GeweBot 类方法介绍
 
-| **方法名**                | **返回值类型** | **描述**                                                 |
-|---------------------------|----------------|--------------------------------------------------------|
-| `start()`                 | `Promise`      | 启动服务                                                 |
+| **方法名**                | **返回值类型** | **描述**                                                    |
+| ------------------------- | -------------- | ----------------------------------------------------------- |
+| `start()`                 | `Promise`      | 启动服务                                                    |
 | `on(eventName, callback)` | `void`         | 监听指定事件，`eventName` 为事件名，`callback` 为回调函数。 |
-| `logout()`                | `boolean`      | 退出登录                                                 |
-| `info()`                  | `Promise`      | 获取当前登录用户的个人信息。                              |
-| `qrcode()`                | `Promise`      | 获取当前用户的二维码。                                    |
-| `getAppId()`              | `string`       | 获取 `appId`。                                            |
-| `getToken()`              | `string`       | 获取 `token`。                                            |
-| `getUuid()`               | `string`       | 获取 `uuid`。                                             |
-| `setInfo(info)`           | `void`         | 设置用户的个人信息，`info` 为用户信息对象。                |
-| `setPrivacy(privacy)`     | `void`         | 设置隐私信息，`privacy` 为隐私设置对象。                   |
-| `setAvatar(avatar)`       | `void`         | 设置用户的头像，`avatar` 为头像图片的路径或 URL。          |
-| `deviceList()`            | `Promise`      | 获取用户设备列表。                                        |
+| `logout()`                | `boolean`      | 退出登录                                                    |
+| `info()`                  | `Promise`      | 获取当前登录用户的个人信息。                                |
+| `qrcode()`                | `Promise`      | 获取当前用户的二维码。                                      |
+| `getAppId()`              | `string`       | 获取 `appId`。                                              |
+| `getToken()`              | `string`       | 获取 `token`。                                              |
+| `getUuid()`               | `string`       | 获取 `uuid`。                                               |
+| `setInfo(info)`           | `void`         | 设置用户的个人信息，`info` 为用户信息对象。                 |
+| `setPrivacy(privacy)`     | `void`         | 设置隐私信息，`privacy` 为隐私设置对象。                    |
+| `setAvatar(avatar)`       | `void`         | 设置用户的头像，`avatar` 为头像图片的路径或 URL。           |
+| `deviceList()`            | `Promise`      | 获取用户设备列表。                                          |
 
 
 
 ### Message 类方法表
 
-| **方法名**                            | **返回值类型**         | **说明**                                              |
-|---------------------------------------|------------------------|-----------------------------------------------------|
-| `isCompanyMsg()`                      | `boolean`              | 判断消息是否为企业微信消息。                           |
-| `from()`                              | `Promise<Contact>`     | 获取消息的发送者。                                     |
-| `to()`                                | `Promise<Contact>`     | 获取消息的接收者。                                     |
-| `room()`                              | `Promise<Room>`        | 获取群信息。                                           |
-| `text()`                              | `string`               | 获取消息的内容。                                       |
-| `async say(textOrContactOrFileOrUrl)` | `Promise<ResponseMsg>` | 回复消息。                                             |
-| `type()`                              | `string`               | 获取消息的类型。参考 MessageType                       |
-| `self()`                              | `boolean`              | 判断是否为自己发的消息。                               |
-| `async mentionSelf()`                 | `Promise`              | 判断是否自己被@。                                      |
-| `async forward(Contact)`              | `Promise`              | 转发消息。                                             |
-| `async quote(text)`                   | `Promise`              | 引用消息（传入一个字符串）。                             |
-| `date()`                              | `Date`                 | 获取消息的日期。                                       |
-| `age()`                               | `number`               | 获取消息的年龄（以秒为单位）。                           |
+| **方法名**                            | **返回值类型**         | **说明**                                                |
+| ------------------------------------- | ---------------------- | ------------------------------------------------------- |
+| `isCompanyMsg()`                      | `boolean`              | 判断消息是否为企业微信消息。                            |
+| `from()`                              | `Promise<Contact>`     | 获取消息的发送者。                                      |
+| `to()`                                | `Promise<Contact>`     | 获取消息的接收者。                                      |
+| `room()`                              | `Promise<Room>`        | 获取群信息。                                            |
+| `text()`                              | `string`               | 获取消息的内容。                                        |
+| `async say(textOrContactOrFileOrUrl)` | `Promise<ResponseMsg>` | 回复消息。                                              |
+| `type()`                              | `string`               | 获取消息的类型。参考 MessageType                        |
+| `self()`                              | `boolean`              | 判断是否为自己发的消息。                                |
+| `async mentionSelf()`                 | `Promise`              | 判断是否自己被@。                                       |
+| `async forward(Contact)`              | `Promise`              | 转发消息。                                              |
+| `async quote(text)`                   | `Promise`              | 引用消息（传入一个字符串）。                            |
+| `date()`                              | `Date`                 | 获取消息的日期。                                        |
+| `age()`                               | `number`               | 获取消息的年龄（以秒为单位）。                          |
 | `async toFileBox(type = 2)`           | `Promise<FileBox>`     | 将消息转换为 FileBox 对象，用于图片消息type为图片质量。 |
-| `getXml2Json(xml)`                    | `Object`               | 将 XML 解析为 JSON 对象。                              |
-| `static async find(query)`            | `Promise<Contact>`     | (由于未保存聊天信息，暂不支持)                         |
-| `static async findAll(queryArgs)`     | `Promise<[Contact]>`   | （由于未保存聊天信息，暂不支持 ）                        |
+| `getXml2Json(xml)`                    | `Object`               | 将 XML 解析为 JSON 对象。                               |
+| `static async find(query)`            | `Promise<Contact>`     | (由于未保存聊天信息，暂不支持)                          |
+| `static async findAll(queryArgs)`     | `Promise<[Contact]>`   | （由于未保存聊天信息，暂不支持 ）                       |
 
 
 ### ResponseMsg 类属性和方法表
 
-| **方法名** | **返回值类型** | **说明**  |
-|------------|----------------|---------|
+| **方法名** | **返回值类型** | **说明**   |
+| ---------- | -------------- | ---------- |
 | `revoke()` | `Promise`      | 撤回消息。 |
 
 ### Contact 类方法表
 
-| **方法名**                            | **返回值类型** | **说明**                                                                        |
-|---------------------------------------|----------------|-------------------------------------------------------------------------------|
+| **方法名**                            | **返回值类型** | **说明**                                                                           |
+| ------------------------------------- | -------------- | ---------------------------------------------------------------------------------- |
 | `async say(textOrContactOrFileOrUrl)` | `Promise`      | 回复消息，返回 `ResponseMsg` 对象，可用于撤回消息。                                |
-| `name()`                              | `string`       | 获取联系人的昵称。                                                               |
+| `name()`                              | `string`       | 获取联系人的昵称。                                                                 |
 | `async alias(newAlias)`               | `Promise`      | 获取或设置联系人的备注名。传递 `newAlias` 时设置新的备注名，否则返回当前的备注名。 |
-| `friend()`                            | `boolean`      | 返回是否为微信好友。当前固定为 tue                                               |
-| `type()`                              | `number`       | 返回联系人的类型。                                                               |
-| `gender()`                            | `number`       | 返回联系人的性别。                                                               |
-| `province()`                          | `string`       | 返回联系人的省份信息。                                                           |
-| `city()`                              | `string`       | 返回联系人的城市信息。                                                           |
-| `async avatar()`                      | `Promise`      | 返回联系人的头像 URL。                                                           |
-| `async sync()`                        | `Promise`      | 同步联系人信息，同步后会自动更新本地缓存。                                      |
-| `self()`                              | `boolean`      | 判断该联系人是否为当前用户自己。                                                 |
+| `friend()`                            | `boolean`      | 返回是否为微信好友。当前固定为 tue                                                 |
+| `type()`                              | `number`       | 返回联系人的类型。                                                                 |
+| `gender()`                            | `number`       | 返回联系人的性别。                                                                 |
+| `province()`                          | `string`       | 返回联系人的省份信息。                                                             |
+| `city()`                              | `string`       | 返回联系人的城市信息。                                                             |
+| `async avatar()`                      | `Promise`      | 返回联系人的头像 URL。                                                             |
+| `async sync()`                        | `Promise`      | 同步联系人信息，同步后会自动更新本地缓存。                                         |
+| `self()`                              | `boolean`      | 判断该联系人是否为当前用户自己。                                                   |
 
 ### Contact 类静态方法表
 
-| **方法名**                 | **返回值类型**     | **说明**                                             |
-|----------------------------|--------------------|----------------------------------------------------|
+| **方法名**                 | **返回值类型**     | **说明**                                                |
+| -------------------------- | ------------------ | ------------------------------------------------------- |
 | `static async find(query)` | `Promise<Contact>` | 根据查询条件查找联系人。（query 为 wxid 或 Contact 类） |
-| `static async findAll()`   | `Promise`          | 查找通讯录列表返回所有好友 wxid 列表                 |
+| `static async findAll()`   | `Promise`          | 查找通讯录列表返回所有好友 wxid 列表                    |
 
 ### Room 类方法说明
 
 | **方法名**                              | **返回值类型**         | **说明**                     |
-|-----------------------------------------|------------------------|----------------------------|
+| --------------------------------------- | ---------------------- | ---------------------------- |
 | `async sync()`                          | `Promise`              | 同步房间信息                 |
 | `async say(textOrContactOrFileOrUrl)`   | `Promise<ResponseMsg>` | 发送消息到房间               |
 | `async add(contact)`                    | `Promise`              | 添加成员到房间               |
 | `async del(contact)`                    | `Promise`              | 删除房间成员                 |
 | `async quit()`                          | `Promise`              | 退出房间                     |
-| `async topic(string)`                   | `Promise<string>`      | 修改房间话题，或获取当前话题  |
+| `async topic(string)`                   | `Promise<string>`      | 修改房间话题，或获取当前话题 |
 | `async announce(string)`                | `Promise`              | 获取或设置房间公告           |
 | `async qrcode()`                        | `Promise`              | 获取房间的二维码             |
 | `async alias(contact)`                  | `Promise<string>`      | 获取成员别名                 |
@@ -454,7 +452,7 @@ const bot = new GeweBot({
 ### Filebox 类方法说明
 
 | **方法名**                           | **返回值类型**  | **说明**                         |
-|--------------------------------------|-----------------|--------------------------------|
+| ------------------------------------ | --------------- | -------------------------------- |
 | `static fromUrl(url)`                | `Filebox`       | 从 URL 创建一个 Filebox 实例     |
 | `static fromFile(filepath)`          | `Filebox`       | 从文件路径创建实例               |
 | `static toDownload(url, type, name)` | `Filebox`       | 从 URL 创建可下载的 Filebox 实例 |
@@ -465,7 +463,7 @@ const bot = new GeweBot({
 ### MessageType 类型表
 
 | **类型**         | **说明**     |
-|------------------|------------|
+| ---------------- | ------------ |
 | `Unknown`        | 未知类型     |
 | `FileStart`      | 文件开始     |
 | `File`           | 文件发送结束 |
@@ -491,26 +489,26 @@ const bot = new GeweBot({
 
 ### Friendship 类方法表
 
-| **方法名**                                | **返回值类型**        | **说明**                                     |
-|-------------------------------------------|-----------------------|--------------------------------------------|
-| `accept()`                                | `Promise`             | 接受好友请求。                                |
-| `reject(content)`                         | `Promise`             | 拒绝好友请求。                                |
-| `hello()`                                 | `string`              | 获取好友请求的内容。                          |
-| `contact()`                               | `Contact`             | 获取好友的联系人信息。                        |
+| **方法名**                                | **返回值类型**        | **说明**                                         |
+| ----------------------------------------- | --------------------- | ------------------------------------------------ |
+| `accept()`                                | `Promise`             | 接受好友请求。                                   |
+| `reject(content)`                         | `Promise`             | 拒绝好友请求。                                   |
+| `hello()`                                 | `string`              | 获取好友请求的内容。                             |
+| `contact()`                               | `Contact`             | 获取好友的联系人信息。                           |
 | `type()`                                  | `number`              | 获取好友请求的来源类型（如微信号搜索、群聊等）。 |
-| `static async search(mobile)`             | `Promise<Friendship>` | 根据手机号搜索联系人。                        |
-| `static async add(contact, helloMessage)` | `Promise`             | 添加联系人，发送好友请求。                     |
+| `static async search(mobile)`             | `Promise<Friendship>` | 根据手机号搜索联系人。                           |
+| `static async add(contact, helloMessage)` | `Promise`             | 添加联系人，发送好友请求。                       |
 
 
 ### RoomInvitation 类方法表
 
-| **方法名**  | **返回值类型**     | **说明**                            |
-|-------------|--------------------|-----------------------------------|
-| `accept()`  | `Promise<void>`    | 接受房间邀请。                       |
+| **方法名**  | **返回值类型**     | **说明**                              |
+| ----------- | ------------------ | ------------------------------------- |
+| `accept()`  | `Promise<void>`    | 接受房间邀请。                        |
 | `inviter()` | `Promise<Contact>` | 获取邀请人，返回一个 `Contact` 对象。 |
-| `topic()`   | `Promise<string>`  | 获取房间邀请的主题。                 |
-| `date()`    | `Promise<Date>`    | 获取房间邀请的日期和时间。           |
-| `age()`     | `Promise<number>`  | 获取邀请的年龄（以秒为单位）。         |
+| `topic()`   | `Promise<string>`  | 获取房间邀请的主题。                  |
+| `date()`    | `Promise<Date>`    | 获取房间邀请的日期和时间。            |
+| `age()`     | `Promise<number>`  | 获取邀请的年龄（以秒为单位）。        |
 
 
 免责声明【必读】

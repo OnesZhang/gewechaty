@@ -24,3 +24,7 @@ cmd.txt
 *.njsproj
 *.sln
 *.sw?
+gewechat/temp
+*.db
+logs
+*.log
