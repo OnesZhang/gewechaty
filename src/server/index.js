@@ -4,7 +4,6 @@ const { bodyParser } = require("@koa/bodyparser");
 import JSONbig from 'json-bigint'
 import serve from 'koa-static'
 import { join } from 'path';
-import { setUrl } from '@/action/setUrl.js'
 import { login, reconnection } from '@/action/login.js'
 import { cacheAllContact } from '@/action/contact'
 import { setCached } from '@/action/common'
@@ -150,24 +149,6 @@ export const startServe = (option) => {
       }
 
       try {
-        let isOnline = ''
-        if (getAppId()) { // 有appid时
-          isOnline = await CheckOnline({
-            appId: getAppId()
-          })
-        } else {
-          console.log('未设置appid，启动登录')
-          isOnline = { ret: 200, data: false }
-        }
-
-        if (isOnline.ret === 200 && isOnline.data === false) {
-          console.log('未登录')
-          const loginRes = await login()
-          if (!loginRes) {
-            console.log('登录失败')
-            process.exit(1);
-          }
-        }
         setCached(true)
 
         // 初始化数据库连接
@@ -187,31 +168,17 @@ export const startServe = (option) => {
           process.exit(1);
         }
 
-        // 此时再启用回调地址 防止插入数据时回调
+        // 启用路由
         app.use(router.routes())
         app.use(router.allowedMethods())
 
-        const res = await setUrl(callBackUrl)
-        if (res.ret === 200) {
-          console.log(`设置回调地址为：${callBackUrl}`)
-          console.log('服务启动成功')
-          resolve({ app, router })
-        } else {
-          console.log('回调地址设置失败，请确定gewechat能访问到回调地址网络: ', callBackUrl)
-          reject(res)
-          process.exit(1);
-        }
-      } catch (e) {
-        console.error('服务器启动失败:', e)
-        reject(e)
+        console.log('服务启动成功')
+        resolve({ app, router })
+      } catch (error) {
+        console.error('服务启动失败:', error);
+        reject(error)
         process.exit(1);
       }
-    }).on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        reject(`Port ${option.port} is already in use. Please use a different port.`);
-      } else {
-        reject(`Server error: ${err}`);
-      }
     });
-  })
+  });
 }
