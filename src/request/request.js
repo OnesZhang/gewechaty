@@ -1,6 +1,5 @@
 import axios from 'axios'
 import JSONbig from 'json-bigint'
-import { getToken } from '../utils/auth.js';
 
 const baseURL = ''
 
@@ -32,7 +31,7 @@ service.interceptors.request.use(
     // 在请求发送之前做一些处理
     config.headers['User-Agent'] = 'Apifox/1.0.0 (https://apifox.com)'
     config.headers['Content-Type'] = 'application/json'
-    config.headers['X-GEWE-TOKEN'] = getToken()
+    config.headers['X-GEWE-TOKEN'] = process.env.WEGE_TOKEN
     return config
   },
   error => {
@@ -48,12 +47,12 @@ service.interceptors.response.use(
     // console.log(response.request.path)
     // console.log(response.data)
     // console.log(response.data.ret)
-    if(response.config.allCode){
+    if (response.config.allCode) {
       return response.data
     }
     if (response.data.ret === 200) {
       return response.data.data
-    }else{
+    } else {
       return Promise.reject(response.data)
     }
   },

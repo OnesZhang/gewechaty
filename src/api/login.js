@@ -1,12 +1,4 @@
-import {post} from '@/request/request.js'
-
-
-export const GetToken = (data, config = {}) => {
-  Object.assign(config, {
-    allCode: true
-  })
-  return post('/tools/getTokenId', data, config)
-}
+import { post } from '@/request/request.js'
 
 export const GetQrcode = (data, config = {}) => {
   Object.assign(config, {

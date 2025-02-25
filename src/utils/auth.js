@@ -9,7 +9,7 @@ export const createDS = (data_dir) => {
 }
 
 export const getToken = () => {
-  return ds.token || ''
+  return process.env.WEGE_TOKEN || ''
 }
 
 export const setToken = (token) => {

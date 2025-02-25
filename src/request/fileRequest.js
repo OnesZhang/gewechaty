@@ -6,14 +6,14 @@ export let FileBaseUrl = ''
 
 // 创建一个 axios 实例
 const service = axios.create({
-  baseURL: '',
-  timeout: 30000 // 请求超时时间
+    baseURL: '',
+    timeout: 30000 // 请求超时时间
 })
 
 
 export const setFileUrl = (url) => {
-  service.defaults.baseURL = url
-  FileBaseUrl = url
+    service.defaults.baseURL = url
+    FileBaseUrl = url
 }
 
 export const downloadFile = async (url, filePath) => {
