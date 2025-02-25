@@ -1,8 +1,8 @@
-import {downloadFile} from '@/request/fileRequest.js'
-import {getFileNameFromUrl, joinURL} from '@/utils/index.js'
+import { downloadFile } from '@/request/fileRequest.js'
+import { getFileNameFromUrl, joinURL } from '@/utils/index.js'
 import { join, basename } from 'path';
 import fs from 'fs'
-import {staticUrl, proxyUrl} from '@/server/index'
+import { staticUrl } from '@/server/index'
 const tempname = '_gewetemp'
 
 
@@ -12,11 +12,11 @@ export class Filebox {
     this.type = ''
     this.name = ''
   }
-  static fromUrl(url, forceType){
+  static fromUrl(url, forceType) {
     const instance = new Filebox()
     const supportType = ['image', 'file']
     const type = forceType || Filebox.getFileType(url)
-    if(!supportType.includes(type)){
+    if (!supportType.includes(type)) {
       throw new Error('Filebox只支持图片和文件类型，语音和视频使用 new Audio() 或 new Video() 来创建')
     }
     instance.type = type
@@ -24,7 +24,7 @@ export class Filebox {
     instance.name = getFileNameFromUrl(url)
     return instance
   }
-  static fromFile(filepath, time = 1000 * 60 * 5){
+  static fromFile(filepath, time = 1000 * 60 * 5) {
     try {
       const tempDir = join(staticUrl, tempname)
       // 检查 temp 目录是否存在，如果不存在则创建
@@ -37,7 +37,8 @@ export class Filebox {
       const destPath = join(tempDir, fileName);
       // 复制文件到 temp 目录
       fs.copyFileSync(filepath, destPath);
-      const url = joinURL(proxyUrl, tempname, fileName)
+      // 构建文件URL
+      const url = process.env.WEGE_BASE_API_URL ? joinURL(process.env.WEGE_BASE_API_URL, tempname, fileName) : joinURL(tempname, fileName)
       const t = setTimeout(() => {
         // 删除文件
         fs.unlink(destPath, (err) => {
@@ -54,12 +55,12 @@ export class Filebox {
       console.error('复制文件时出错:', err);
     }
   }
-  static toDownload(url, type, name){
+  static toDownload(url, type, name) {
     const instance = new Filebox()
-    if(!type){
+    if (!type) {
       type = Filebox.getFileType(url)
     }
-    if(!name){
+    if (!name) {
       name = getFileNameFromUrl(url)
     }
     instance.type = type
@@ -67,10 +68,10 @@ export class Filebox {
     instance.name = name
     return instance
   }
-  toFile(dest){
+  toFile(dest) {
     return downloadFile(this.url, dest)
   }
-  static getFileType(fileName){
+  static getFileType(fileName) {
     const extension = fileName.split('.').pop().toLowerCase();
     // 定义文件类型对应的扩展名
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
@@ -79,15 +80,15 @@ export class Filebox {
     const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar'];
     // 判断文件类型
     if (imageExtensions.includes(extension)) {
-        return 'image';
+      return 'image';
     } else if (videoExtensions.includes(extension)) {
-        return 'video';
+      return 'video';
     } else if (audioExtensions.includes(extension)) {
-        return 'audio';
+      return 'audio';
     } else if (documentExtensions.includes(extension)) {
-        return 'file';
+      return 'file';
     } else {
-        return 'unknown';
+      return 'unknown';
     }
   }
 }

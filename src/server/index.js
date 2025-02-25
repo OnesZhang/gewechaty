@@ -25,8 +25,6 @@ dotenv.config();
 
 export const bot = botEmitter
 export let staticUrl = 'static'
-export let proxyUrl = ''
-const ip = getLocalIPAddress()
 const app = new koa()
 const router = new koaRouter()
 // 使用 bodyParser 解析 POST 请求的 body
@@ -39,17 +37,9 @@ app.use(bodyParser());
 
 
 export const startServe = (option) => {
-  // 启动服务
-  var cbip = option.ip || ip;
-  let callBackUrl = `http://${cbip}:${option.port}${option.route}`
-  if (option.proxy) {
-    callBackUrl = `${option.proxy}${option.route}`
-  }
-  proxyUrl = option.proxy
   // 设置文件保存目录
   app.use(serve(join(process.cwd(), option.static)))
   staticUrl = join(process.cwd(), option.static)
-
 
   // 定义一个接口，能够同时处理 GET 和 POST 请求
   router.post(option.route, async (ctx) => {

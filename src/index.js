@@ -11,7 +11,6 @@ export { MiniApp } from '@/class/MINIAPP.js'
 export { AppMsg } from '@/class/APPMSG.js'
 import { Message } from '@/class/MESSAGE.js'
 import { Room } from '@/class/ROOM.js'
-import { getLocalIPAddress } from "@/utils/index.js";
 import { logout, login } from '@/action/login.js'
 import { Friendship } from './class/FRIENDSHIP'
 import { getMyInfo, getMyQrcode, setMyInfo, setPrivacy, setAvatar, getDevices } from '@/action/personal.js'
@@ -30,12 +29,8 @@ export class GeweBot {
   constructor(option = {}) {
     // 初始化配置
     Object.assign(this, option)
-    const ip = option.ip || getLocalIPAddress()
     this.port = this.port || 3000;
     this.static = this.static || 'static';
-    this.proxy = this.proxy || `http://${ip}:${this.port}`;
-    this.base_api = this.base_api || `http://${ip}:2531/v2/api`;
-    this.file_api = this.file_api || `http://${ip}:2532/download`;
     this.route = this.route || '/getWechatCallBack'
     this.use_cache = true
     this.debug = this.debug || false
