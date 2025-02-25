@@ -49,6 +49,12 @@ export class GeweBot {
       mkdirSync(this.data_dir, { recursive: true })
     }
     createDS(this.data_dir)
+
+    // 设置 appId
+    if (this.appId) {
+      const { setAppId } = require('./utils/auth.js')
+      setAppId(this.appId)
+    }
   }
   async start() {
     // 使用环境变量作为基础URL

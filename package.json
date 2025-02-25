@@ -5,10 +5,13 @@
   "types": "index.d.ts",
   "scripts": {
     "test": "node ./test.js",
-    "dev": "npm run build && npm run test",
+    "dev": "npm run init-db && npm run build && npm run test",
+    "dev:db": "npm run init-db",
+    "dev:watch": "webpack --config ./webpack.config.js --watch",
     "build": "webpack --config ./webpack.config.js",
     "check-types": "tsc index.d.ts --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "init-db": "node ./init-db.js"
   },
   "author": "MIKO",
   "license": "ISC",
