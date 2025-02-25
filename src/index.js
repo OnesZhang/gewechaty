@@ -56,8 +56,14 @@ export class GeweBot {
     createDS(this.data_dir)
   }
   async start() {
-    setBaseUrl(this.base_api)
-    setFileUrl(this.file_api)
+    // 使用环境变量作为基础URL
+    const baseApiUrl = process.env.WEGE_BASE_API_URL
+    if (!baseApiUrl) {
+      console.error('环境变量 WEGE_BASE_API_URL 未设置')
+      process.exit(1)
+    }
+    setBaseUrl(baseApiUrl)
+    setFileUrl(baseApiUrl)
     // 启动服务
     return await startServe(this)
   }

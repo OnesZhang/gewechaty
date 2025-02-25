@@ -2,11 +2,11 @@ import axios from 'axios'
 import fs from 'fs';
 import path from 'path';
 
-export let FileBaseUrl = ''
+export let FileBaseUrl = process.env.WEGE_BASE_API_URL || ''
 
 // 创建一个 axios 实例
 const service = axios.create({
-    baseURL: '',
+    baseURL: process.env.WEGE_BASE_API_URL || '',
     timeout: 30000 // 请求超时时间
 })
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import JSONbig from 'json-bigint'
 
-const baseURL = ''
+const baseURL = process.env.WEGE_BASE_API_URL || ''
 
 // 创建一个 axios 实例
 const service = axios.create({

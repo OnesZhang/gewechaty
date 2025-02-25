@@ -35,14 +35,13 @@ export const setUuid = (uuid) => {
   ds.save()
 }
 
-
 export const setBaseUrl = (baseUrl) => {
   ds.baseUrl = baseUrl
   ds.save()
 }
 
 export const getBaseUrl = () => {
-  return ds.baseUrl || ''
+  return process.env.WEGE_BASE_API_URL || ds.baseUrl || ''
 }
 
 export const setFileApiUrl = (fileBaseUrl) => {
@@ -51,5 +50,5 @@ export const setFileApiUrl = (fileBaseUrl) => {
 }
 
 export const getFileApiUrl = () => {
-  return ds.fileApiBaseUrl || ''
+  return process.env.WEGE_BASE_API_URL || ds.fileApiBaseUrl || ''
 }
