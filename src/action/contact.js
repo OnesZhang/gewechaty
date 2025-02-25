@@ -1,8 +1,8 @@
-import {setFriendRemark, findContact, getInfo, findAllContact, AddContact} from '@/api/contact'
-import {GetRoomInfo} from '@/api/room.js'
-import {getAppId} from '@/utils/auth.js'
-import {Contact} from '@/class/CONTACT'
-import {db} from '@/sql/index.js'
+import { setFriendRemark, findContact, getInfo, findAllContact, AddContact } from '@/api/contact'
+import { GetRoomInfo } from '@/api/room.js'
+import { getAppId } from '@/utils/auth.js'
+import { Contact } from '@/class/CONTACT'
+import { db } from '@/sql/index.js'
 // import {getCached} from '@/action/common.js'
 
 export const setRemark = async (wxid, remark) => {
@@ -16,17 +16,17 @@ export const setRemark = async (wxid, remark) => {
 export const getContact = async (wxid) => { // 使用id查询
   let contact = null
   contact = db.findOneByWxId(wxid)
-  if(!contact){ // 未缓存 则查询
+  if (!contact) { // 未缓存 则查询
     const info = await getInfo({
       appId: getAppId(),
       wxids: [wxid]
     })
-    if(!info || info.length === 0){
+    if (!info || info.length === 0) {
       console.log('未找到')
       return null
     }
     contact = info[0] || null
-    if(contact){ // 插入缓存
+    if (contact) { // 插入缓存
       db.insertContact(contact)
     }
   }
@@ -38,12 +38,12 @@ export const contactSync = async (wxid) => {
     appId: getAppId(),
     wxids: [wxid]
   })
-  if(!info || info.length === 0){
+  if (!info || info.length === 0) {
     console.log('未找到')
     return null
   }
   let contact = info[0] || null
-  if(contact){ // 插入缓存
+  if (contact) { // 插入缓存
     db.insertContact(contact)
   }
   return contact ? new Contact(contact) : null
@@ -52,50 +52,50 @@ export const contactSync = async (wxid) => {
 
 export const find = async (content) => { // 使用name alias wxid查询
   let contactsInfo = ''
-  if(typeof content === 'string'){
+  if (typeof content === 'string') {
     contactsInfo = content
 
-  }else if(typeof content ==='object'){
+  } else if (typeof content === 'object') {
     contactsInfo = content.name || content.alias || content.id
-  }else{
+  } else {
     console.log('不支持的查询内容')
     return null
   }
-  if(!contactsInfo){
+  if (!contactsInfo) {
     console.log('查询内容不能为空')
     return null
   }
 
 
   let contact = null
-  if(typeof content ==='string'){
+  if (typeof content === 'string') {
     contact = db.findOneByWxId(content)
-  }else if(typeof content ==='object'){
-    if(content.name){
+  } else if (typeof content === 'object') {
+    if (content.name) {
       contact = db.findOneByName(content.name)
-    }else if(content.alias){
+    } else if (content.alias) {
       contact = db.findOneByAlias(content.alias)
-    }else if(content.id){
+    } else if (content.id) {
       contact = db.findOneByWxId(content.id)
-    }else{
+    } else {
       console.log('不支持的查询内容')
       return null
     }
   }
-  return contact? new Contact(contact) : null
+  return contact ? new Contact(contact) : null
 }
 
 export const findAll = async (query) => {
   let arr = []
   let rows = []
-  if(!query){
+  if (!query) {
     rows = db.findAllContacts()
-  }else if(typeof query ==='object'){
-    if(query.name){
+  } else if (typeof query === 'object') {
+    if (query.name) {
       rows = db.findAllByName(query.name)
-    }else if(query.alias){
+    } else if (query.alias) {
       rows = db.findAllByAlias(query.alias)
-    }else{
+    } else {
       console.log('不支持的查询内容')
       return arr
     }
@@ -203,9 +203,9 @@ export const searchContact = async (mobile) => {
     appId: getAppId(),
     contactsInfo: mobile
   })
-  if(res){
+  if (res) {
     return res
-  }else{
+  } else {
     return null
   }
 }

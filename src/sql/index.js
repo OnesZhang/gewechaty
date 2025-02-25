@@ -1,341 +1,323 @@
-import Database from 'better-sqlite3';
-import fs from 'fs';
-import {getRoomMemberList} from '@/action/room.js'
+import mysql from 'mysql2/promise';
 
 class myDB {
   constructor() {
-    this.db = null;
+    this.pool = null;
   }
 
-  exists(dbName) {
-    return fs.existsSync(dbName);
-  }
-
-  // 方法1：传入数据库名称，检查是否存在数据库，存在则返回db实例，不存在则创建并返回实例
-  connect(dbName) {
-    if (!fs.existsSync(dbName)) {
-      console.log(`Database ${dbName} does not exist, creating...`);
+  async connect() {
+    if (!this.pool) {
+      this.pool = await mysql.createPool({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '3306'),
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || 'root',
+        database: process.env.DB_NAME || 'gewechaty',
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        charset: 'utf8mb4'
+      });
+      console.log('Connected to MySQL database');
     }
-    this.db = new Database(dbName);
-    console.log(`Connected to database: ${dbName}`);
-    return this.db;
+    return this.pool;
   }
 
-  // 方法2：创建contact表，如果不存在则创建
-  createContactTable() {
+  async createContactTable() {
     const tableName = 'contact';
     const tableSchema = `
-      userName TEXT PRIMARY KEY,
-      nickName TEXT,
-      pyInitial TEXT,
-      quanPin TEXT,
-      sex INTEGER,
-      remark TEXT,
-      remarkPyInitial TEXT,
-      remarkQuanPin TEXT,
-      signature TEXT,
-      alias TEXT,
-      snsBgImg TEXT,
-      country TEXT,
-      bigHeadImgUrl TEXT,
-      smallHeadImgUrl TEXT,
-      description TEXT,
-      cardImgUrl TEXT,
-      labelList TEXT,
-      province TEXT,
-      city TEXT,
-      phoneNumList TEXT
+      CREATE TABLE IF NOT EXISTS ${tableName} (
+        userName VARCHAR(255) PRIMARY KEY,
+        nickName VARCHAR(255),
+        pyInitial VARCHAR(255),
+        quanPin VARCHAR(255),
+        sex INT,
+        remark VARCHAR(255),
+        remarkPyInitial VARCHAR(255),
+        remarkQuanPin VARCHAR(255),
+        signature TEXT,
+        alias VARCHAR(255),
+        snsBgImg TEXT,
+        country VARCHAR(255),
+        bigHeadImgUrl TEXT,
+        smallHeadImgUrl TEXT,
+        description TEXT,
+        cardImgUrl TEXT,
+        labelList TEXT,
+        province VARCHAR(255),
+        city VARCHAR(255),
+        phoneNumList TEXT
+      )
     `;
 
-    const tableExists = this.db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`).get(tableName);
-    if (!tableExists) {
-      console.log(`Table ${tableName} does not exist, creating...`);
-      this.db.exec(`CREATE TABLE ${tableName} (${tableSchema})`);
-    } else {
-      console.log(`Table ${tableName} already exists.`);
+    try {
+      const pool = await this.connect();
+      await pool.query(tableSchema);
+      console.log(`Table ${tableName} is ready.`);
+    } catch (err) {
+      console.error('Error creating contact table:', err);
+      throw err;
     }
   }
 
-  // 方法2：创建room表，如果不存在则创建
-  createRoomTable() {
+  async createRoomTable() {
     const tableName = 'room';
     const tableSchema = `
-      chatroomId TEXT PRIMARY KEY,
-      nickName TEXT,
-      pyInitial TEXT,
-      quanPin TEXT,
-      sex INTEGER,
-      remark TEXT,
-      remarkPyInitial TEXT,
-      remarkQuanPin TEXT,
-      chatRoomNotify INTEGER,
-      chatRoomOwner TEXT,
-      smallHeadImgUrl TEXT,
-      memberList TEXT
+      CREATE TABLE IF NOT EXISTS ${tableName} (
+        chatroomId VARCHAR(255) PRIMARY KEY,
+        nickName VARCHAR(255),
+        pyInitial VARCHAR(255),
+        quanPin VARCHAR(255),
+        sex INT,
+        remark VARCHAR(255),
+        remarkPyInitial VARCHAR(255),
+        remarkQuanPin VARCHAR(255),
+        chatRoomNotify INT,
+        chatRoomOwner VARCHAR(255),
+        smallHeadImgUrl TEXT,
+        memberList TEXT
+      )
     `;
 
-    const tableExists = this.db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`).get(tableName);
-    if (!tableExists) {
-      console.log(`Table ${tableName} does not exist, creating...`);
-      this.db.exec(`CREATE TABLE ${tableName} (${tableSchema})`);
-    } else {
-      // 检查是否存在 memberList 字段，如果不存在则添加
-      const columns = this.db.prepare(`PRAGMA table_info(${tableName})`).all();
-      const columnNames = columns.map(column => column.name);
-      if (!columnNames.includes('memberList')) {
-        console.log(`Adding memberList column to ${tableName} table...`);
-        this.db.exec(`ALTER TABLE ${tableName} ADD COLUMN memberList TEXT`);
-      } else {
-        console.log(`Table ${tableName} already exists and has memberList column.`);
-      }
+    try {
+      const pool = await this.connect();
+      await pool.query(tableSchema);
+      console.log(`Table ${tableName} is ready.`);
+    } catch (err) {
+      console.error('Error creating room table:', err);
+      throw err;
     }
   }
 
-  // 方法3：根据 userName 查找联系人，返回该条数据或 null
-  findOneByWxId(wxid) {
-    const stmt = this.db.prepare('SELECT * FROM contact WHERE userName = ?');
-    const row = stmt.get(wxid);
-    return row ? row : null;
-  }
-
-  findOneByName(nickName) {
-    const stmt = this.db.prepare('SELECT * FROM contact WHERE nickName = ?');
-    const row = stmt.get(nickName);
-    return row ? row : null;
-  }
-  findAllByName(nickName) {
-    const stmt = this.db.prepare('SELECT * FROM contact WHERE nickName = ?');
-    const rows = stmt.all(nickName);
-    return rows.length > 0 ? rows : null;
-  }
-
-  findOneByAlias(alias) {
-    const stmt = this.db.prepare('SELECT * FROM contact WHERE remark = ?');
-    const row = stmt.get(alias);
-    return row ? row : null;
-  }
-
-  findAllByAlias(alias) {
-    const stmt = this.db.prepare('SELECT * FROM contact WHERE remark = ?');
-    const rows = stmt.all(alias);
-    return rows.length > 0 ? rows : null;
-  }
-
-  // 方法3：根据 chatroomId 查找房间，返回该条数据或 null
-  findOneByChatroomId(chatroomId) {
-    const stmt = this.db.prepare('SELECT * FROM room WHERE chatroomId = ?');
-    const row = stmt.get(chatroomId);
-    if (row && row.memberList) {
-      row.memberList = JSON.parse(row.memberList); // 将 memberList 转换为 JSON 格式
+  async findOneByWxId(wxid) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM contact WHERE userName = ?', [wxid]);
+      return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+      console.error('Error finding contact by wxid:', err);
+      throw err;
     }
-    return row ? row : null;
   }
 
-  findOneByChatroomName(name) {
-    const stmt = this.db.prepare('SELECT * FROM room WHERE nickName = ?');
-    const row = stmt.get(name);
-    return row ? row : null;
-  }
-
-  findAllByChatroomName(name) {
-    const stmt = this.db.prepare('SELECT * FROM room WHERE nickName = ?');
-    const rows = stmt.all(name);
-    return rows.length > 0 ? rows : null;
-  }
-
-  // 新增方法：更新room表中的memberList字段
-  updateRoomMemberList(chatroomId, memberList) {
-    const existingRoom = this.findOneByChatroomId(chatroomId);
-    if (!existingRoom) {
-      console.log(`Room ${chatroomId} does not exist.`);
-      return;
+  async findOneByName(nickName) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM contact WHERE nickName = ?', [nickName]);
+      return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+      console.error('Error finding contact by name:', err);
+      throw err;
     }
-
-    const updateStmt = this.db.prepare(`
-      UPDATE room SET memberList = ? WHERE chatroomId = ?
-    `);
-
-    // 将 memberList 转换为 JSON 字符串并更新
-    updateStmt.run(JSON.stringify(memberList), chatroomId);
-
-    console.log(`Updated memberList for room: ${chatroomId}`);
   }
 
-  // 方法4：插入新的联系人数据，如果存在则更新
-  insertContact(contact) {
-    if (contact.userName === null) {
-      return;
+  async findAllByName(nickName) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM contact WHERE nickName = ?', [nickName]);
+      return rows.length > 0 ? rows : null;
+    } catch (err) {
+      console.error('Error finding all contacts by name:', err);
+      throw err;
     }
-  
-    // 定义字段的最大长度
-    const MAX_LENGTH = 255;
-  
-    // 用一个函数来截断字符串
-    const truncate = (value, maxLength = MAX_LENGTH) => {
-      if (typeof value === 'string' && value.length > maxLength) {
-        return value.substring(0, maxLength);
-      }
-      return value;
-    };
-  
-    const insertStmt = this.db.prepare(`
-      INSERT OR REPLACE INTO contact (
-        userName, nickName, pyInitial, quanPin, sex, remark, remarkPyInitial,
-        remarkQuanPin, signature, alias, snsBgImg, country, bigHeadImgUrl,
-        smallHeadImgUrl, description, cardImgUrl, labelList, province, city, phoneNumList
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-  
-    insertStmt.run(
-      truncate(contact.userName) || null,
-      truncate(contact.nickName) || null,
-      truncate(contact.pyInitial) || null,
-      truncate(contact.quanPin) || null,
-      contact.sex || null,
-      truncate(contact.remark) || null,
-      truncate(contact.remarkPyInitial) || null,
-      truncate(contact.remarkQuanPin) || null,
-      truncate(contact.signature) || null,
-      truncate(contact.alias) || null,
-      truncate(contact.snsBgImg) || null,
-      truncate(contact.country) || null,
-      truncate(contact.bigHeadImgUrl) || null,
-      truncate(contact.smallHeadImgUrl) || null,
-      truncate(contact.description) || null,
-      truncate(contact.cardImgUrl) || null,
-      truncate(contact.labelList) || null,
-      truncate(contact.province) || null,
-      truncate(contact.city) || null,
-      truncate(contact.phoneNumList) || null
-    );
-  
-    console.log(`缓存联系人: ${contact.userName}`);
   }
 
-  // 方法4：插入新的房间数据，如果存在则更新
-  insertRoom(room) {
-    if(room.chatroomId === null){
-      return
+  async findOneByAlias(alias) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM contact WHERE remark = ?', [alias]);
+      return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+      console.error('Error finding contact by alias:', err);
+      throw err;
     }
-    const insertStmt = this.db.prepare(`
-      INSERT OR REPLACE INTO room (
-        chatroomId, nickName, pyInitial, quanPin, sex, remark, remarkPyInitial,
-        remarkQuanPin, chatRoomNotify, chatRoomOwner, smallHeadImgUrl, memberList
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    insertStmt.run(
-      room.chatroomId || null,
-      room.nickName || null,
-      room.pyInitial || null,
-      room.quanPin || null,
-      room.sex || null,
-      room.remark || null,
-      room.remarkPyInitial || null,
-      room.remarkQuanPin || null,
-      room.chatRoomNotify || null,
-      room.chatRoomOwner || null,
-      room.smallHeadImgUrl || null,
-      room.memberList ? JSON.stringify(room.memberList) : null
-    );
-
-    console.log(`缓存群: ${room.chatroomId}`);
   }
-  // 方法5：更新联系人数据
-  updateContact(userName, newData) {
-    const existingContact = this.findOneByUserName(userName);
-    if (!existingContact) {
-      console.log(`Contact ${userName} does not exist.`);
-      return;
+
+  async findAllByAlias(alias) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM contact WHERE remark = ?', [alias]);
+      return rows.length > 0 ? rows : null;
+    } catch (err) {
+      console.error('Error finding all contacts by alias:', err);
+      throw err;
     }
-
-    const updateStmt = this.db.prepare(`
-      UPDATE contact SET
-        nickName = ?, pyInitial = ?, quanPin = ?, sex = ?, remark = ?, remarkPyInitial = ?,
-        remarkQuanPin = ?, signature = ?, alias = ?, snsBgImg = ?, country = ?, bigHeadImgUrl = ?,
-        smallHeadImgUrl = ?, description = ?, cardImgUrl = ?, labelList = ?, province = ?, city = ?, phoneNumList = ?
-      WHERE userName = ?
-    `);
-
-    updateStmt.run(
-      newData.nickName || existingContact.nickName,
-      newData.pyInitial || existingContact.pyInitial,
-      newData.quanPin || existingContact.quanPin,
-      newData.sex || existingContact.sex,
-      newData.remark || existingContact.remark,
-      newData.remarkPyInitial || existingContact.remarkPyInitial,
-      newData.remarkQuanPin || existingContact.remarkQuanPin,
-      newData.signature || existingContact.signature,
-      newData.alias || existingContact.alias,
-      newData.snsBgImg || existingContact.snsBgImg,
-      newData.country || existingContact.country,
-      newData.bigHeadImgUrl || existingContact.bigHeadImgUrl,
-      newData.smallHeadImgUrl || existingContact.smallHeadImgUrl,
-      newData.description || existingContact.description,
-      newData.cardImgUrl || existingContact.cardImgUrl,
-      newData.labelList || existingContact.labelList,
-      newData.province || existingContact.province,
-      newData.city || existingContact.city,
-      newData.phoneNumList || existingContact.phoneNumList,
-      userName
-    );
-
-    console.log(`Updated contact: ${userName}`);
   }
 
-  // 方法5：更新房间数据
-  async updateRoom(chatroomId, newData) {
-    const existingRoom = this.findOneByChatroomId(chatroomId);
-    if (!existingRoom) {
-      console.log(`Room ${chatroomId} does not exist.`);
-      return;
-    }
-
-    const updateStmt = this.db.prepare(`
-      UPDATE room SET
-        nickName = ?, pyInitial = ?, quanPin = ?, sex = ?, remark = ?, remarkPyInitial = ?,
-        remarkQuanPin = ?, chatRoomNotify = ?, chatRoomOwner = ?, smallHeadImgUrl = ?, memberList = ?
-      WHERE chatroomId = ?
-    `);
-    
-    const res = await getRoomMemberList(chatroomId) // 更新memberlist
-    if(res && res.memberList){
-      newData.memberList = res.memberList
-    }
-    updateStmt.run(
-      newData.nickName || existingRoom.nickName,
-      newData.pyInitial || existingRoom.pyInitial,
-      newData.quanPin || existingRoom.quanPin,
-      newData.sex || existingRoom.sex,
-      newData.remark || existingRoom.remark,
-      newData.remarkPyInitial || existingRoom.remarkPyInitial,
-      newData.remarkQuanPin || existingRoom.remarkQuanPin,
-      newData.chatRoomNotify || existingRoom.chatRoomNotify,
-      newData.chatRoomOwner || existingRoom.chatRoomOwner,
-      newData.smallHeadImgUrl || existingRoom.smallHeadImgUrl,
-      newData.memberList ? JSON.stringify(newData.memberList) : existingRoom.memberList, // 转换为 JSON 字符串
-      chatroomId
-    );
-
-    console.log(`Updated room: ${chatroomId}`);
-  }
-  // 方法6：查询所有联系人数据
-  findAllContacts() {
-    const stmt = this.db.prepare('SELECT * FROM contact');
-    const rows = stmt.all(); // 获取所有记录
-    return rows;
-  }
-
-  // 方法7：查询所有房间数据
-  findAllRooms() {
-    const stmt = this.db.prepare('SELECT * FROM room');
-    const rows = stmt.all();
-    return rows.map(row => {
-      if (row.memberList) {
-        row.memberList = JSON.parse(row.memberList); // 将 memberList 转换为 JSON 格式
+  async findOneByChatroomId(chatroomId) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM room WHERE chatroomId = ?', [chatroomId]);
+      const row = rows.length > 0 ? rows[0] : null;
+      if (row && row.memberList) {
+        row.memberList = JSON.parse(row.memberList);
       }
       return row;
-    });
+    } catch (err) {
+      console.error('Error finding room by chatroomId:', err);
+      throw err;
+    }
+  }
+
+  async findOneByChatroomName(name) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM room WHERE nickName = ?', [name]);
+      return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+      console.error('Error finding room by name:', err);
+      throw err;
+    }
+  }
+
+  async findAllByChatroomName(name) {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM room WHERE nickName = ?', [name]);
+      return rows.length > 0 ? rows : null;
+    } catch (err) {
+      console.error('Error finding all rooms by name:', err);
+      throw err;
+    }
+  }
+
+  async insertContact(contact) {
+    if (!contact.userName) {
+      return;
+    }
+
+    try {
+      const pool = await this.connect();
+      const sql = `
+        INSERT INTO contact (
+          userName, nickName, pyInitial, quanPin, sex, remark, remarkPyInitial,
+          remarkQuanPin, signature, alias, snsBgImg, country, bigHeadImgUrl,
+          smallHeadImgUrl, description, cardImgUrl, labelList, province, city, phoneNumList
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          nickName = VALUES(nickName),
+          pyInitial = VALUES(pyInitial),
+          quanPin = VALUES(quanPin),
+          sex = VALUES(sex),
+          remark = VALUES(remark),
+          remarkPyInitial = VALUES(remarkPyInitial),
+          remarkQuanPin = VALUES(remarkQuanPin),
+          signature = VALUES(signature),
+          alias = VALUES(alias),
+          snsBgImg = VALUES(snsBgImg),
+          country = VALUES(country),
+          bigHeadImgUrl = VALUES(bigHeadImgUrl),
+          smallHeadImgUrl = VALUES(smallHeadImgUrl),
+          description = VALUES(description),
+          cardImgUrl = VALUES(cardImgUrl),
+          labelList = VALUES(labelList),
+          province = VALUES(province),
+          city = VALUES(city),
+          phoneNumList = VALUES(phoneNumList)
+      `;
+
+      await pool.query(sql, [
+        contact.userName || null,
+        contact.nickName || null,
+        contact.pyInitial || null,
+        contact.quanPin || null,
+        contact.sex || null,
+        contact.remark || null,
+        contact.remarkPyInitial || null,
+        contact.remarkQuanPin || null,
+        contact.signature || null,
+        contact.alias || null,
+        contact.snsBgImg || null,
+        contact.country || null,
+        contact.bigHeadImgUrl || null,
+        contact.smallHeadImgUrl || null,
+        contact.description || null,
+        contact.cardImgUrl || null,
+        contact.labelList || null,
+        contact.province || null,
+        contact.city || null,
+        contact.phoneNumList || null
+      ]);
+
+      console.log(`缓存联系人: ${contact.userName}`);
+    } catch (err) {
+      console.error('Error inserting contact:', err);
+      throw err;
+    }
+  }
+
+  async updateContact(userName, newData) {
+    try {
+      const pool = await this.connect();
+      const existingContact = await this.findOneByWxId(userName);
+      if (!existingContact) {
+        console.log(`Contact ${userName} does not exist.`);
+        return;
+      }
+
+      const sql = `
+        UPDATE contact SET
+          nickName = ?,
+          pyInitial = ?,
+          quanPin = ?,
+          sex = ?,
+          remark = ?,
+          remarkPyInitial = ?,
+          remarkQuanPin = ?,
+          signature = ?,
+          alias = ?,
+          snsBgImg = ?,
+          country = ?,
+          bigHeadImgUrl = ?,
+          smallHeadImgUrl = ?,
+          description = ?,
+          cardImgUrl = ?,
+          labelList = ?,
+          province = ?,
+          city = ?,
+          phoneNumList = ?
+        WHERE userName = ?
+      `;
+
+      await pool.query(sql, [
+        newData.nickName || existingContact.nickName,
+        newData.pyInitial || existingContact.pyInitial,
+        newData.quanPin || existingContact.quanPin,
+        newData.sex || existingContact.sex,
+        newData.remark || existingContact.remark,
+        newData.remarkPyInitial || existingContact.remarkPyInitial,
+        newData.remarkQuanPin || existingContact.remarkQuanPin,
+        newData.signature || existingContact.signature,
+        newData.alias || existingContact.alias,
+        newData.snsBgImg || existingContact.snsBgImg,
+        newData.country || existingContact.country,
+        newData.bigHeadImgUrl || existingContact.bigHeadImgUrl,
+        newData.smallHeadImgUrl || existingContact.smallHeadImgUrl,
+        newData.description || existingContact.description,
+        newData.cardImgUrl || existingContact.cardImgUrl,
+        newData.labelList || existingContact.labelList,
+        newData.province || existingContact.province,
+        newData.city || existingContact.city,
+        newData.phoneNumList || existingContact.phoneNumList,
+        userName
+      ]);
+
+      console.log(`Updated contact: ${userName}`);
+    } catch (err) {
+      console.error('Error updating contact:', err);
+      throw err;
+    }
+  }
+
+  async findAllContacts() {
+    try {
+      const pool = await this.connect();
+      const [rows] = await pool.query('SELECT * FROM contact');
+      return rows;
+    } catch (err) {
+      console.error('Error finding all contacts:', err);
+      throw err;
+    }
   }
 }
 
